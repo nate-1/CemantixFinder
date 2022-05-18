@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import timeit
+import sys
 
 
 ENGLISH_ASSOC_ENDPOINT = "https://wordassociations.net/en/words-associated-with/"
@@ -9,15 +10,15 @@ FRENCH_ASSOC_ENDPOINT = "https://wordassociations.net/fr/associations-avec-le-mo
 ENGLISH_GAME_ENDPOINT = "https://cemantle.herokuapp.com/score"
 FRENCH_GAME_ENDPOINT = "https://cemantix.herokuapp.com/score"
 
-LANG = "fr"
+LANG = sys.argv[1]
 
-MIN_SCORE_TO_USE_ASSOC = 0.49
+MIN_SCORE_TO_USE_ASSOC = float(sys.argv[2])
 
 WIN_SCORE = float('1.0')
 
 S = requests.Session()
 
-def getAssociaions(word):
+def getAssociaions(word, start):
     requestUrl =""
     if LANG == "en":
         requestUrl = ENGLISH_ASSOC_ENDPOINT + word
@@ -25,7 +26,9 @@ def getAssociaions(word):
         requestUrl = FRENCH_ASSOC_ENDPOINT + word
     else: 
         raise Exception("Language not supported")
-    
+
+    requestUrl += '?start=' + str(start) 
+
     r = S.get(requestUrl)
     soup = BeautifulSoup(r.content, 'html.parser')
     mainDiv = soup.find('div', attrs={'class': 'n-content'})
@@ -72,7 +75,7 @@ if __name__ == "__main__":
             highestScoreWord = line
             print(score, ' : ', line)
         
-        if score > MIN_SCORE_TO_USE_ASSOC:
+        if score >= MIN_SCORE_TO_USE_ASSOC:
             break   
         
     if score >= 1:
@@ -84,27 +87,32 @@ if __name__ == "__main__":
     while True : 
         print('ASSOC FROM: ' + highestScoreWord)
 
-        arrayAssoc = getAssociaions(highestScoreWord)
-
-        if score >= WIN_SCORE:
-            stop = timeit.default_timer()
-            print('word found \'' + word + '\' in ' + str(stop - start) + ' seconds')            
-            exit()
-
         hasWentHigher = False
+        for page in ['0', '100', '200'] :
+            arrayAssoc = getAssociaions(highestScoreWord, page)
 
-        for word in arrayAssoc:
-            try:
-                score = checkWord(word.lower())
-            except Exception: 
-                continue
-            print(score, ' : ', word)
+            if score >= WIN_SCORE:
+                stop = timeit.default_timer()
+                print('word found \'' + word + '\' in ' + str(stop - start) + ' seconds')            
+                exit()
 
-            if score > highestScore:
-                highestScore = score
-                highestScoreWord = word
-                hasWentHigher = True
+
+            for word in arrayAssoc:
+                try:
+                    score = checkWord(word.lower())
+                except Exception: 
+                    continue
+
                 print(score, ' : ', word)
+
+                if score > highestScore:
+                    highestScore = score
+                    highestScoreWord = word
+                    hasWentHigher = True
+                    print(score, ' : ', word)
+                    break
+            
+            if hasWentHigher:
                 break
 
         if not hasWentHigher: 
