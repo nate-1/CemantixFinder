@@ -93,7 +93,7 @@ if __name__ == "__main__":
     
         print(colored('ASSOC FROM: ' + highestScoreWord, 'red'))
 
-        hasWentHigher = False
+        wentHigher = False
         for page in ['0', '100', '200'] :
             arrayAssoc = getAssociaions(highestScoreWord, page)
 
@@ -114,13 +114,13 @@ if __name__ == "__main__":
                 if score > highestScore:
                     highestScore = score
                     highestScoreWord = word
-                    hasWentHigher = True
+                    wentHigher = True
                     print(colored(str(score) + ' : ' + word, 'red'))
                     break
             
-            if hasWentHigher:
+            if wentHigher:
                 break
 
-        if not hasWentHigher: 
+        if not wentHigher: 
             print('Stuck in associations')
             exit()
