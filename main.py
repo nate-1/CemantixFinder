@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import timeit
 import sys
+from termcolor import colored
 
 
 ENGLISH_ASSOC_ENDPOINT = "https://wordassociations.net/en/words-associated-with/"
@@ -73,7 +74,7 @@ if __name__ == "__main__":
         if score > highestScore:
             highestScore = score
             highestScoreWord = line
-            print(score, ' : ', line)
+            print(colored(str(score) + ' : ' + line, 'red'))
         
         if score >= MIN_SCORE_TO_USE_ASSOC:
             break   
@@ -82,10 +83,15 @@ if __name__ == "__main__":
         print('word found: ' + highestScoreWord)
         exit()
 
-    print('SWITCH TO ASSOCIATIONS')
+    print(colored('SWITCH TO ASSOCIATIONS', 'red'))
 
     while True : 
-        print('ASSOC FROM: ' + highestScoreWord)
+        if score >= WIN_SCORE:
+                stop = timeit.default_timer()
+                print('word found \'' + word + '\' in ' + str(stop - start) + ' seconds')            
+                exit()
+    
+        print(colored('ASSOC FROM: ' + highestScoreWord, 'red'))
 
         hasWentHigher = False
         for page in ['0', '100', '200'] :
@@ -109,7 +115,7 @@ if __name__ == "__main__":
                     highestScore = score
                     highestScoreWord = word
                     hasWentHigher = True
-                    print(score, ' : ', word)
+                    print(colored(str(score) + ' : ' + word, 'red'))
                     break
             
             if hasWentHigher:
